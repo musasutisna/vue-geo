@@ -34,8 +34,6 @@ onMounted(async () => {
 
       // load list layers
       await layer.toLoadListLayer()
-
-      await layer.toSearch('BUKIT TUTA')
     })
 })
 </script>
