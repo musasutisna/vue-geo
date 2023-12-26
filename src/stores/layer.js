@@ -162,9 +162,7 @@ export const useLayerStore = defineStore('Layer', () => {
       let PROPERTY_FILTER = 'propertyName='
 
       if (searchConfig.property) {
-        for (var propertyName of searchConfig.property) {
-          PROPERTY_FILTER += `(${propertyName})`
-        }
+        PROPERTY_FILTER += `(${searchConfig.property.toString()})`
       }
 
       try {
