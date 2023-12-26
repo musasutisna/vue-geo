@@ -167,33 +167,35 @@ export const useLayerStore = defineStore('Layer', () => {
         }
       }
 
-      map.arcgis.request(`${searchConfig.url}&${CQL_FILTER}&${PROPERTY_FILTER}`, {
-        responseType: 'json'
-      }).then((res) => {
-        if (res.data && res.data.features) {
+      try {
+        const searchRequest = await map.arcgis.request(`${searchConfig.url}&${CQL_FILTER}&${PROPERTY_FILTER}`, {
+          responseType: 'json'
+        })
+
+        if (searchRequest.data && searchRequest.data.features) {
           if (searchConfig.label) {
-            for (var featureIndex in res.data.features) {
+            for (var featureIndex in searchRequest.data.features) {
               let label = ''
 
               for (var l of searchConfig.label) {
                 for (var lIndex in l) {
                   if (l[lIndex] === 'prop') {
-                    label += res.data.features[featureIndex].properties[lIndex] + ' '
+                    label += searchRequest.data.features[featureIndex].properties[lIndex] + ' '
                   } else {
                     label += lIndex
                   }
                 }
               }
 
-              res.data.features[featureIndex].label = label
+              searchRequest.data.features[featureIndex].label = label
             }
 
-            results[layerIndex] = res.data.features
+            results[layerIndex] = searchRequest.data.features
           }
         }
-      }).catch((err) => {
+      } catch(err) {
         console.error(`store.layer.toSearch : ${err.message}`)
-      })
+      }
     }
 
     message.toToggleLoading({ display: false })
