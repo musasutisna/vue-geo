@@ -24,6 +24,7 @@ export const useMapStore = defineStore('Map', () => {
     removeLayer: null,
     createQueryBBOX: null,
     getCurrentZoomLevel: null,
+    goTo: null,
     request: null
   }
 
@@ -190,6 +191,12 @@ export const useMapStore = defineStore('Map', () => {
           return step
         }
 
+        arcgis.goTo = function (source) {
+          source.queryExtent().then(sourceExtent => {
+            arcgis.view.goTo(sourceExtent.extent)
+          })
+        }
+
         arcgis.request = request
 
         arcgis.map = new Map({
@@ -219,8 +226,6 @@ export const useMapStore = defineStore('Map', () => {
         arcgis.view.ui.add(scaleBar, {
           position: 'bottom-left'
         })
-
-        const versionDOM = document.createElement('div')
 
         arcgis.view.on('click', onClick)
 
