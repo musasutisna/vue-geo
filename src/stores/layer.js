@@ -16,6 +16,7 @@ export const useLayerStore = defineStore('Layer', () => {
   const groups = ref({})
   const sources = ref({})
   const search = ref({})
+  const geojson = ref({})
 
   async function toLoadListLayer() {
     message.toToggleLoading({
@@ -28,6 +29,7 @@ export const useLayerStore = defineStore('Layer', () => {
     groups.value = {}
     sources.value = {}
     search.value = {}
+    geojson.value = {}
 
     // layer start from zero
     var layerIndex = 0
@@ -59,6 +61,10 @@ export const useLayerStore = defineStore('Layer', () => {
 
         if (layer.config.search) {
           search.value[layerIndex] = layer.config.search
+        }
+
+        if (layer.config.geojson) {
+          geojson.value[layerIndex] = layer.config.geojson
         }
 
         layerIndex += 1
@@ -148,6 +154,25 @@ export const useLayerStore = defineStore('Layer', () => {
     return null
   }
 
+  function generateRequestUrl(config, properties) {
+    let CQL_FILTER = `CQL_FILTER=${config.query || ''}`
+    let PROPERTY_FILTER = 'property_filter='
+
+    if (config.property_load) {
+      PROPERTY_FILTER += `(${searchConfig.property_load.toString()})`
+    }
+
+    if (config.property_scope) {
+      for (var property of config.property_scope) {
+        CQL_FILTER = CQL_FILTER.replaceAll(`$${property}`, properties[property])
+      }
+    }
+
+    CQL_FILTER = window.decodeURIComponent(CQL_FILTER)
+
+    return `${config.url}&${CQL_FILTER}&${PROPERTY_FILTER}`
+  }
+
   async function toSearch(query) {
     message.toToggleLoading({
       text: 'mencari data'
@@ -161,8 +186,8 @@ export const useLayerStore = defineStore('Layer', () => {
       let CQL_FILTER = `CQL_FILTER=${window.encodeURIComponent(searchConfig?.query?.replaceAll(new RegExp('\\$query', 'ig'), query))}`
       let PROPERTY_FILTER = 'propertyName='
 
-      if (searchConfig.property) {
-        PROPERTY_FILTER += `(${searchConfig.property.toString()})`
+      if (searchConfig.property_load) {
+        PROPERTY_FILTER += `(${searchConfig.property_load.toString()})`
       }
 
       try {
@@ -201,14 +226,77 @@ export const useLayerStore = defineStore('Layer', () => {
     return results
   }
 
+  async function toLoadGeojson(layerIndex, properties) {
+    message.toToggleLoading({
+      text: 'memuat data'
+    })
+
+    let result = null
+
+    if (geojson.value[layerIndex]) {
+      const geojsonConfig = list.value[layerIndex].config.geojson
+      const geojsonUrl = generateRequestUrl(geojsonConfig, properties)
+
+      try {
+        const geojsonRequest = await map.arcgis.request(geojsonUrl, {
+          responseType: 'json'
+        })
+
+        if (geojsonRequest.data && geojsonRequest.data.features) {
+          result = geojsonRequest.data
+        }
+      } catch (err) {
+        console.error(`store.layer.toLoadGeojson: ${err.message}`)
+      }
+    }
+
+    message.toToggleLoading({ display: false })
+
+    return result
+  }
+
+  async function toAddGeojson(layerIndex, featureIndex, properties, cb = null) {
+    message.toToggleLoading({
+      text: 'memuat data'
+    })
+
+    if (geojson.value[layerIndex]) {
+      const geojsonConfig = geojson.value[layerIndex]
+      const geojsonUrl = await generateRequestUrl(geojsonConfig, properties)
+
+      map.arcgis.loadLayer({
+        type: 'geojson',
+        config: {
+          ...geojsonConfig.config,
+          url: geojsonUrl
+        }
+      }, (source) => {
+        if (source) {
+          sources[`${layerIndex}_${featureIndex}`] = source
+
+          cb(source)
+        }
+      })
+    }
+
+    message.toToggleLoading({ display: false })
+  }
+
   return {
     list,
     categories,
+    group,
+    sources,
+    search,
+    geojson,
     toLoadListLayer,
     toggleLayer,
     toggleGroup,
     toggleContent,
     getLayerFromSource,
-    toSearch
+    generateRequestUrl,
+    toSearch,
+    toLoadGeojson,
+    toAddGeojson
   }
 })
