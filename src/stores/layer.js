@@ -14,9 +14,9 @@ export const useLayerStore = defineStore('Layer', () => {
   const list = ref({})
   const categories = ref({})
   const groups = ref({})
-  const sources = ref({})
-  const search = ref({})
-  const geojson = ref({})
+  let sources = ref({})
+  let search = ref({})
+  let geojson = ref({})
 
   async function toLoadListLayer() {
     message.toToggleLoading({
@@ -27,9 +27,9 @@ export const useLayerStore = defineStore('Layer', () => {
     list.value = {}
     categories.value = {}
     groups.value = {}
-    sources.value = {}
-    search.value = {}
-    geojson.value = {}
+    sources = {}
+    search = {}
+    geojson = {}
 
     // layer start from zero
     var layerIndex = 0
@@ -60,11 +60,11 @@ export const useLayerStore = defineStore('Layer', () => {
         }
 
         if (layer.config.search) {
-          search.value[layerIndex] = layer.config.search
+          search[layerIndex] = layer.config.search
         }
 
         if (layer.config.geojson) {
-          geojson.value[layerIndex] = layer.config.geojson
+          geojson[layerIndex] = layer.config.geojson
         }
 
         layerIndex += 1
@@ -93,22 +93,22 @@ export const useLayerStore = defineStore('Layer', () => {
       layer.config.enable = 'on'
     }
 
-    if (typeof sources.value[layerIndex] === 'undefined') {
+    if (typeof sources[layerIndex] === 'undefined') {
       map.arcgis.loadLayer(layer, (source) => {
         if (source) {
-          sources.value[layerIndex] = source
+          sources[layerIndex] = source
         }
 
         message.toToggleLoading({ display: false })
       })
-    } else if (sources.value[layerIndex]) {
+    } else if (sources[layerIndex]) {
       if (layer.config.enable !== 'scale') {
-        sources.value[layerIndex].minScale = 279541132.0143589
+        sources[layerIndex].minScale = 279541132.0143589
       } else {
-        sources.value[layerIndex].minScale = layer.config.min_scale
+        sources[layerIndex].minScale = layer.config.min_scale
       }
 
-      sources.value[layerIndex].visible = layer.config.enable === 'on' || layer.config.enable === 'scale' ? true : false
+      sources[layerIndex].visible = layer.config.enable === 'on' || layer.config.enable === 'scale' ? true : false
 
       message.toToggleLoading({ display: false })
     }
@@ -137,7 +137,7 @@ export const useLayerStore = defineStore('Layer', () => {
   }
 
   async function toggleContent(contentName, force = null) {
-    for (var layerIndex in sources.value) {
+    for (var layerIndex in sources) {
       if (list.value[layerIndex].content === contentName) {
         await toggleLayer(layerIndex, force)
       }
@@ -145,8 +145,8 @@ export const useLayerStore = defineStore('Layer', () => {
   }
 
   function getLayerFromSource(layerSource) {
-    for (var layerIndex in sources.value) {
-      if (sources.value[layerIndex] === layerSource) {
+    for (var layerIndex in sources) {
+      if (sources[layerIndex] === layerSource) {
         return list.value[layerIndex]
       }
     }
@@ -180,8 +180,8 @@ export const useLayerStore = defineStore('Layer', () => {
 
     const results = {}
 
-    for (var layerIndex in search.value) {
-      const searchConfig = search.value[layerIndex]
+    for (var layerIndex in search) {
+      const searchConfig = search[layerIndex]
 
       let CQL_FILTER = `CQL_FILTER=${window.encodeURIComponent(searchConfig?.query?.replaceAll(new RegExp('\\$query', 'ig'), query))}`
       let PROPERTY_FILTER = 'propertyName='
@@ -233,7 +233,7 @@ export const useLayerStore = defineStore('Layer', () => {
 
     let result = null
 
-    if (geojson.value[layerIndex]) {
+    if (geojson[layerIndex]) {
       const geojsonConfig = list.value[layerIndex].config.geojson
       const geojsonUrl = generateRequestUrl(geojsonConfig, properties)
 
@@ -260,8 +260,8 @@ export const useLayerStore = defineStore('Layer', () => {
       text: 'memuat data'
     })
 
-    if (geojson.value[layerIndex]) {
-      const geojsonConfig = geojson.value[layerIndex]
+    if (geojson[layerIndex]) {
+      const geojsonConfig = geojson[layerIndex]
       const geojsonUrl = await generateRequestUrl(geojsonConfig, properties)
 
       map.arcgis.loadLayer({
