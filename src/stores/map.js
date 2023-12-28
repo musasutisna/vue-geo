@@ -123,6 +123,8 @@ export const useMapStore = defineStore('Map', () => {
             }
 
             source = new MapImageLayer(imageConfig)
+
+            arcgis.addLayer(source, layerConfig.zindex)
           } else if (layerConfig.type === 'wms') {
             const wmsConfig = {
               url: layerConfig.config.url,
