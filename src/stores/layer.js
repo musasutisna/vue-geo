@@ -144,6 +144,14 @@ export const useLayerStore = defineStore('Layer', () => {
     }
   }
 
+  function toChangeOpacity(layerIndex, opacityLevel) {
+    if (sources[layerIndex]) {
+      sources[layerIndex].opacity = opacityLevel / 100
+    }
+
+    list.value[layerIndex].config.opacity = opacityLevel
+  }
+
   function getLayerFromSource(layerSource) {
     for (var layerIndex in sources) {
       if (sources[layerIndex] === layerSource) {
@@ -293,6 +301,7 @@ export const useLayerStore = defineStore('Layer', () => {
     toggleLayer,
     toggleGroup,
     toggleContent,
+    toChangeOpacity,
     getLayerFromSource,
     generateRequestUrl,
     toSearch,

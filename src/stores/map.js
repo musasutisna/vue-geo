@@ -25,6 +25,7 @@ export const useMapStore = defineStore('Map', () => {
     createQueryBBOX: null,
     getCurrentZoomLevel: null,
     goTo: null,
+    location: null,
     request: null
   }
 
@@ -32,9 +33,9 @@ export const useMapStore = defineStore('Map', () => {
    * Current map control options.
    */
   const mapControl = reactive({
-    zoom: 8,
-    scale: 2183915.09375,
-    center: [110.54194180237681, -7.27722652430667],
+    zoom: 6,
+    scale: 8735660.375,
+    center: [118.54148354886968, -0.7015339181837845],
     bound: {
       south_west_lng: null,
       south_west_lat: null,
@@ -57,6 +58,7 @@ export const useMapStore = defineStore('Map', () => {
         'esri/layers/MapImageLayer',
         'esri/layers/WMSLayer',
         'esri/layers/GeoJSONLayer',
+        'esri/widgets/Locate',
         'esri/geometry/Point',
         'esri/geometry/support/geodesicUtils',
         'esri/config',
@@ -72,6 +74,7 @@ export const useMapStore = defineStore('Map', () => {
         MapImageLayer,
         WMSLayer,
         GeoJSONLayer,
+        Locate,
         Point,
         geodesicUtils,
         esriConfig,
@@ -110,7 +113,8 @@ export const useMapStore = defineStore('Map', () => {
               sublayers: [{
                 id: layerConfig.config.id,
                 visible: true
-              }]
+              }],
+              opacity: layerConfig.config.opacity / 100
             }
 
             if (layerConfig.config.enable === 'scale') {
@@ -127,7 +131,8 @@ export const useMapStore = defineStore('Map', () => {
               }],
               customParameters: {
                 CQL_FILTER: layerConfig.cql_filter
-              }
+              },
+              opacity: layerConfig.config.opacity / 100
             }
 
             if (layerConfig.config.enable === 'scale') {
@@ -144,7 +149,8 @@ export const useMapStore = defineStore('Map', () => {
               outFields: ['*'],
               featureReduction: layerConfig.config.feature_reduction,
               renderer: layerConfig.config.renderer,
-              labelingInfo: layerConfig.config.labelingInfo
+              labelingInfo: layerConfig.config.labelingInfo,
+              opacity: layerConfig.config.opacity / 100
             }
 
             if (layerConfig.config.enable === 'scale') {
@@ -196,6 +202,11 @@ export const useMapStore = defineStore('Map', () => {
             arcgis.view.goTo(sourceExtent.extent)
           })
         }
+
+        arcgis.location = new Locate({
+          view: arcgis.view,
+          iconClass: 'esri-icon-navigation'
+        })
 
         arcgis.request = request
 
@@ -282,11 +293,25 @@ export const useMapStore = defineStore('Map', () => {
     })
   }
 
+  function toLocation() {
+    arcgis.location()
+  }
+
+  function toCenter() {
+    arcgis.view.goTo({
+      zoom: 6,
+      scale: 8735660.375,
+      center: [118.54148354886968, -0.7015339181837845]
+    })
+  }
+
   return {
     arcgis,
     mapControl,
     toInitMap,
     toZoomIn,
-    toZoomOut
+    toZoomOut,
+    toLocation,
+    toCenter
   }
 })
