@@ -123,8 +123,6 @@ export const useMapStore = defineStore('Map', () => {
             }
 
             source = new MapImageLayer(imageConfig)
-
-            arcgis.addLayer(source, layerConfig.config.zindex)
           } else if (layerConfig.type === 'wms') {
             const wmsConfig = {
               url: layerConfig.config.url,
@@ -143,8 +141,6 @@ export const useMapStore = defineStore('Map', () => {
             }
 
             source = new WMSLayer(wmsConfig)
-
-            arcgis.addLayer(source, layerConfig.config.zindex)
           } else if (layerConfig.type === 'geojson') {
             const geojsonConfig = {
               url: layerConfig.config.url,
@@ -162,7 +158,9 @@ export const useMapStore = defineStore('Map', () => {
             }
 
             source = new GeoJSONLayer(geojsonConfig)
+          }
 
+          if (source) {
             arcgis.addLayer(source, layerConfig.config.zindex)
           }
 
