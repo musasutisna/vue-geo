@@ -94,7 +94,7 @@ export const useLayerStore = defineStore('Layer', () => {
     }
 
     if (typeof sources[layerIndex] === 'undefined') {
-      map.arcgis.loadLayer(layer, (source) => {
+      await map.arcgis.loadLayer(layer, (source) => {
         if (source) {
           sources[layerIndex] = source
         }
@@ -272,7 +272,7 @@ export const useLayerStore = defineStore('Layer', () => {
       const geojsonConfig = geojson[layerIndex]
       const geojsonUrl = await generateRequestUrl(geojsonConfig, properties)
 
-      map.arcgis.loadLayer({
+      await map.arcgis.loadLayer({
         type: 'geojson',
         config: {
           ...geojsonConfig.config,

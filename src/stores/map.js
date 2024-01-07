@@ -102,7 +102,7 @@ export const useMapStore = defineStore('Map', () => {
           arcgis.map.basemap = arcgis.loadBasemap(basemapConfig)
         }
 
-        arcgis.loadLayer = function (layerConfig, cb) {
+        arcgis.loadLayer = async function (layerConfig, cb) {
           let source = null
 
           if (layerConfig.type === 'image') {
@@ -161,6 +161,8 @@ export const useMapStore = defineStore('Map', () => {
           }
 
           if (source) {
+            await source.load()
+
             arcgis.addLayer(source, layerConfig.config.zindex)
           }
 
