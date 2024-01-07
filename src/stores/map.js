@@ -124,7 +124,7 @@ export const useMapStore = defineStore('Map', () => {
 
             source = new MapImageLayer(imageConfig)
 
-            arcgis.addLayer(source, layerConfig.zindex)
+            arcgis.addLayer(source, layerConfig.config.zindex)
           } else if (layerConfig.type === 'wms') {
             const wmsConfig = {
               url: layerConfig.config.url,
@@ -144,15 +144,16 @@ export const useMapStore = defineStore('Map', () => {
 
             source = new WMSLayer(wmsConfig)
 
-            arcgis.addLayer(source, layerConfig.zindex)
+            arcgis.addLayer(source, layerConfig.config.zindex)
           } else if (layerConfig.type === 'geojson') {
             const geojsonConfig = {
               url: layerConfig.config.url,
               outFields: ['*'],
-              featureReduction: layerConfig.config.feature_reduction,
-              renderer: layerConfig.config.renderer,
-              labelingInfo: layerConfig.config.labelingInfo,
-              opacity: layerConfig.config.opacity / 100
+              featureReduction: { ...layerConfig.config.feature_reduction },
+              renderer: { ...layerConfig.config.renderer },
+              labelingInfo: { ...layerConfig.config.labelingInfo },
+              opacity: layerConfig.config.opacity / 100,
+              customParameters: { ...layerConfig.config.customParameters }
             }
 
             if (layerConfig.config.enable === 'scale') {
@@ -162,7 +163,7 @@ export const useMapStore = defineStore('Map', () => {
 
             source = new GeoJSONLayer(geojsonConfig)
 
-            arcgis.addLayer(source, layerConfig.zindex)
+            arcgis.addLayer(source, layerConfig.config.zindex)
           }
 
           cb(source)
